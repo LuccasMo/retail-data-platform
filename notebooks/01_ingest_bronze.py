@@ -1,3 +1,5 @@
+# pyright: reportUndefinedVariable=false
+
 # Databricks notebook source
 # Retail Data Platform
 # Notebook: 01_ingest_bronze

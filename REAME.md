@@ -23,56 +23,24 @@ A solução foi desenvolvida para:
 
 ---
 
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura da Solução
 
-O fluxo principal da plataforma é:
+![Arquitetura da Retail Data Platform](docs/img/retail-data-platform-architecture.png)
 
-```text
-Python / Faker
-      │
-      ▼
-Azure Data Lake Storage Gen2
-      │
-      │ Landing Zone
-      ▼
-Databricks Auto Loader
-      │
-      ▼
-┌──────────────────────┐
-│        BRONZE        │
-│    Dados brutos      │
-│     Delta Lake       │
-└──────────┬───────────┘
-           │
-           ▼
-     Data Validation
-        /       \
-       /         \
-      ▼           ▼
-┌────────────┐  ┌──────────────┐
-│   SILVER   │  │  QUARANTINE  │
-│   Dados    │  │    Dados     │
-│ tratados   │  │   inválidos  │
-└─────┬──────┘  └──────────────┘
-      │
-      ▼
-┌──────────────────────┐
-│         GOLD         │
-│     Star Schema      │
-│                      │
-│ fact_sales           │
-│ dim_customers        │
-│ dim_products         │
-│ dim_stores           │
-│ dim_date             │
-└──────────┬───────────┘
-           │
-           ▼
-      Data Products
-           │
-           ▼
-     AI/BI Dashboard
-```
+---
+
+### Fluxo de Dados
+
+**Landing → Bronze → Silver → Gold → Analytics**
+
+- **Landing Zone:** recebe os arquivos CSV de clientes, produtos, lojas e vendas.
+- **Bronze:** preserva os dados ingeridos em sua forma bruta.
+- **Silver:** realiza limpeza, padronização, deduplicação e validações.
+- **Gold:** disponibiliza dados modelados e preparados para análise.
+- **Analytics:** fornece consultas, KPIs e visualizações para consumo analítico.
+
+A ingestão utiliza **Databricks Auto Loader** com checkpoints independentes,
+permitindo processamento incremental e controle do estado de cada fonte.
 
 ---
 
