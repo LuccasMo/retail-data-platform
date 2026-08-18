@@ -1,4 +1,9 @@
 # Databricks notebook source
+# Retail Data Platform
+# Notebook: 02_transform_silver
+# Objetivo: realizar validação e padronização dos dados para ingestão na camada Gold
+
+
 df_customers = spark.table("retail.bronze.customers_auto")
 
 display(df_customers)

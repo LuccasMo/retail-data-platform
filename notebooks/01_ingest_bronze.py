@@ -1,4 +1,8 @@
 # Databricks notebook source
+# Retail Data Platform
+# Notebook: 01_ingest_bronze
+# Objetivo: realizar ingestão incremental da Landing para a camada Bronze
+# usando Auto Loader, checkpoints independentes e Delta Lake.
 
 df_customers = (
     spark.read

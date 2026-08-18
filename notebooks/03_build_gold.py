@@ -1,4 +1,9 @@
 # Databricks notebook source
+# Retail Data Platform
+# Notebook: 03_build_gold
+# Objetivo: receber dados validados da camada silver após validações
+# para serem consumidos
+
 from pyspark.sql import functions as F
 
 df_customers = spark.table("retail.silver.customers")
