@@ -44,6 +44,155 @@ permitindo processamento incremental e controle do estado de cada fonte.
 
 ---
 
+## 📊 Dashboard Executivo
+
+Foi desenvolvido um dashboard interativo no Databricks AI/BI para transformar
+os dados da camada Gold em indicadores de negócio.
+
+Os principais KPIs apresentados são:
+
+- Receita Total
+- Lucro Total
+- Margem de Lucro
+- Ticket Médio
+
+Também foram criadas análises de:
+
+- Evolução da receita e do lucro ao longo do tempo
+- Receita por região
+- Performance por categoria
+- Top 10 produtos
+- Performance por loja
+- Vendas por forma de pagamento
+
+O dashboard possui filtros globais por:
+
+- Período
+- Região
+- Categoria
+
+Esses filtros afetam tanto os gráficos quanto os KPIs principais,
+permitindo análise dinâmica do desempenho comercial.
+
+![Dashboard Executivo](docs\img\retail-data-platform-dashboard1.png)
+
+---
+
+## ⚙️ Pipeline de Dados
+
+O processamento foi dividido em notebooks independentes, permitindo separar
+as responsabilidades de ingestão, transformação, modelagem, validação e análise.
+
+### 01 — Ingest Bronze
+
+Responsável pela ingestão dos arquivos da Landing Zone para a camada Bronze.
+
+Principais características:
+
+- Ingestão incremental utilizando Databricks Auto Loader
+- Checkpoints independentes para cada fonte
+- Suporte à evolução de schema
+- Persistência dos dados em Delta Lake
+- Preservação dos dados brutos
+
+Fontes processadas:
+
+- `customers`
+- `products`
+- `stores`
+- `sales`
+
+Notebook: [`01_ingest_bronze.py`](notebooks/01_ingest_bronze.py)
+
+---
+
+### 02 — Transform Silver
+
+Responsável pelo tratamento e padronização dos dados provenientes da Bronze.
+
+Principais operações:
+
+- Limpeza e padronização
+- Tratamento de valores nulos
+- Remoção de duplicidades
+- Validação de referências
+- Aplicação de regras de negócio
+- Separação de registros válidos e inválidos
+
+A camada Silver representa dados confiáveis e preparados para utilização
+nas etapas posteriores do pipeline.
+
+Notebook: [`02_transform_silver.py`](notebooks/02_transform_silver.py)
+
+---
+
+### 03 — Build Gold
+
+Responsável pela construção da camada analítica da plataforma.
+
+Nesta etapa, os dados tratados são organizados para facilitar consultas
+analíticas e geração de indicadores.
+
+Principais componentes:
+
+- Tabela fato de vendas
+- Dimensão de clientes
+- Dimensão de produtos
+- Dimensão de lojas
+- Dimensão de datas
+- Métricas financeiras e comerciais
+
+Entre as métricas disponibilizadas estão:
+
+- Receita
+- Lucro
+- Margem
+- Ticket médio
+- Quantidade vendida
+
+Notebook: [`03_build_gold.py`](notebooks/03_build_gold.py)
+
+---
+
+### 04 — Validate Pipeline
+
+Responsável pelas verificações de qualidade após o processamento.
+
+As validações incluem:
+
+- Integridade do schema
+- Valores nulos em campos críticos
+- Registros duplicados
+- Integridade referencial
+- Volume de registros
+- Consistência entre as camadas
+
+Essa etapa permite identificar problemas antes que os dados sejam utilizados
+para análises.
+
+Notebook: [`04_validate_pipeline.py`](notebooks/04_validate_pipeline.py)
+
+---
+
+### 05 — Analytics
+
+Camada destinada à exploração analítica dos dados disponíveis na Gold.
+
+As análises desenvolvidas incluem:
+
+- Receita total
+- Lucro total
+- Margem
+- Ticket médio
+- Evolução temporal das vendas
+- Receita por região
+- Performance por categoria
+- Produtos com maior receita
+- Performance por loja
+- Distribuição das vendas por forma de pagamento
+
+Notebook: [`05_analytics.py`](notebooks/05_analytics.py)
+
 ## 🧰 Tecnologias Utilizadas
 
 | Tecnologia | Utilização |
@@ -378,6 +527,71 @@ Quarantine               5
 ```
 
 Isso demonstra que os registros inválidos foram isolados enquanto os registros válidos continuaram normalmente pelo pipeline.
+
+---
+
+## 🧠 Decisões de Engenharia e Troubleshooting
+
+Durante o desenvolvimento da plataforma, alguns desafios exigiram ajustes
+na arquitetura e no processamento dos dados.
+
+### Processamento incremental e checkpoints
+
+A ingestão foi implementada utilizando Databricks Auto Loader com checkpoints
+independentes para cada fonte de dados.
+
+Essa abordagem permite que o pipeline mantenha o estado de processamento de
+cada dataset e evite o reprocessamento desnecessário de arquivos já ingeridos.
+
+Cada fonte possui seu próprio checkpoint:
+
+- `customers_chk`
+- `products_chk`
+- `stores_chk`
+- `sales_chk`
+
+### Idempotência
+
+O pipeline foi projetado para permitir novas execuções sem duplicar
+indevidamente os dados já processados.
+
+Durante os testes, múltiplas execuções foram realizadas para validar o
+comportamento das camadas Bronze, Silver e Gold.
+
+### Qualidade e Quarantine
+
+Registros que não atendem às regras de qualidade não são simplesmente
+descartados.
+
+O processo de transformação permite separar dados válidos de registros
+inválidos, possibilitando análise posterior dos problemas encontrados.
+
+Entre as verificações realizadas estão:
+
+- Chaves obrigatórias
+- Valores nulos
+- Duplicidades
+- Integridade referencial
+- Consistência dos valores
+- Volume de registros entre as camadas
+
+### Evolução de Schema
+
+A ingestão foi preparada para lidar com mudanças no schema dos arquivos
+recebidos, reduzindo a necessidade de alterações manuais no pipeline diante
+de mudanças compatíveis na estrutura dos dados.
+
+### Orquestração
+
+O processamento foi organizado em tarefas dependentes no Databricks Jobs:
+
+`Ingest Bronze → Transform Silver → Build Gold`
+
+Essa estrutura garante que uma etapa posterior seja executada somente após
+a conclusão da etapa da qual depende.
+
+Também foram configuradas políticas de retry para aumentar a resiliência
+do pipeline diante de falhas temporárias.
 
 ---
 
